@@ -1,7 +1,8 @@
 [package]
 name = "purgr"
-author = "Thatguyjs"
+authors = ["Thatguyjs"]
 version = "0.1.0"
 edition = "2018"
 
 [dependencies]
+png-rs = { git = "https://github.com/Thatguyjs/png-rs" }
