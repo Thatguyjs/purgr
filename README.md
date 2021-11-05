@@ -1,4 +1,4 @@
 # purgr (pnrgr)
-### [pərj-er]
+### [pərj-ər]
 
 Purge unnecessary tags from PNG images
