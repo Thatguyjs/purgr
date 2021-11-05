@@ -1,4 +1,5 @@
 // A very simple CLI argument parser
+#![allow(dead_code)]
 
 use std::env;
 
