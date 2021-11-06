@@ -75,7 +75,7 @@ dependencies = [
 [[package]]
 name = "png-rs"
 version = "0.1.0"
-source = "git+https://github.com/Thatguyjs/png-rs#a891c0f3b5db83873d52cef3116424975635dfac"
+source = "git+https://github.com/Thatguyjs/png-rs#5358bc80ef98d28798a84ee6b972ce6810accd6a"
 dependencies = [
  "crc",
  "flate2",
