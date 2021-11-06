@@ -6,3 +6,4 @@ edition = "2018"
 
 [dependencies]
 png-rs = { git = "https://github.com/Thatguyjs/png-rs" }
+clap = "2.33.3"

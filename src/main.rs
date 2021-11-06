@@ -1,9 +1,15 @@
-mod args;
-use args::*;
-
+use clap::clap_app;
 use png_rs::{decoder::*, encoder::*};
 
 fn main() -> Result<(), DecoderError> {
+	let matches = clap_app!(purgr =>
+		(version: "0.2.0")
+		(author: "Thatguyjs")
+		(about: "Purge unnecessary tags from PNG images")
+		(@arg INPUT_PATH: * -i --input +takes_value "Specifies the input PNG file")
+		(@arg OUTPUT_PATH: * -o --output +takes_value "Specifies the output PNG file")
+	).get_matches();
+
 	let save_types = vec![
 		b"IHDR", b"IEND",
 		b"PLTE", b"IDAT",
@@ -18,15 +24,11 @@ fn main() -> Result<(), DecoderError> {
 		b"pHYs", // Make this optional
 	];
 
-	let env_args = Args::from_env();
-	let input_cmd = Command::new("input".into(), "i".into(), "Specify the input filepath".into(), 1);
-	let output_cmd = Command::new("output".into(), "o".into(), "Specify the output filepath".into(), 1);
+	let input_path = matches.value_of("INPUT_PATH").unwrap();
+	let output_path = matches.value_of("OUTPUT_PATH").unwrap();
 
-	let input_path = input_cmd.get_from_args(&env_args).expect("A filepath input argument must be specified");
-	let output_path = output_cmd.get_from_args(&env_args).expect("A filepath output argument must be specified");
-
-	let mut decoder = ImageDecoder::open(&input_path[0])?;
-	let mut encoder = ImageEncoder::open(&output_path[0]).expect("Failed to create ImageEncoder");
+	let mut decoder = ImageDecoder::open(input_path)?;
+	let mut encoder = ImageEncoder::open(output_path).expect("Failed to create ImageEncoder");
 
 	let mut chunks_removed = 0usize;
 
