@@ -6,15 +6,15 @@ use std::convert::TryInto;
 
 fn main() -> Result<(), DecoderError> {
 	let matches = clap_app!(purgr =>
-		(version: "0.3.0")
+		(version: "0.3.1")
 		(author: "Thatguyjs")
 		(about: "Purge unnecessary tags from PNG images")
 		(@arg INPUT_PATH: * -i --input +takes_value "Specifies the input PNG file")
 		(@arg OUTPUT_PATH: * -o --output +takes_value "Specifies the output PNG file")
-		(@arg ALLOWED_TAGS: -a --allow ... +takes_value "Allows specific tags to be copied to the output file")
+		(@arg ALLOWED_CHUNKS: -a --allow ... +takes_value "Allows specific chunk types to be copied to the output file")
 	).get_matches();
 
-	let mut save_types = vec![
+	let mut allowed_names = vec![
 		b"IHDR", b"IEND",
 		b"PLTE", b"IDAT",
 		b"cHRM",
@@ -28,18 +28,18 @@ fn main() -> Result<(), DecoderError> {
 		b"pHYs", // Make this optional
 	];
 
-	match matches.values_of("ALLOWED_TAGS") {
+	match matches.values_of("ALLOWED_CHUNKS") {
 		Some(vals) => {
 			for v in vals {
 				if v.len() != 4 {
-					println!("Invalid allowed tag: {}", v);
+					println!("Invalid chunk name: {}", v);
 					continue;
 				}
 
 				let tag_bytes = v.as_bytes().try_into().unwrap();
-				if save_types.contains(&tag_bytes) { continue; }
+				if allowed_names.contains(&tag_bytes) { continue; }
 
-				save_types.push(tag_bytes);
+				allowed_names.push(tag_bytes);
 			}
 		},
 		None => {}
@@ -56,7 +56,7 @@ fn main() -> Result<(), DecoderError> {
 	for chunk in decoder.chunks() {
 		match &chunk {
 			Ok(c) => {
-				if save_types.contains(&&c.ch_type) {
+				if allowed_names.contains(&&c.ch_type) {
 					match encoder.write_chunk(c) {
 						Ok(_) => { println!("Wrote chunk: {}", std::str::from_utf8(&c.ch_type).unwrap_or("[Invalid Type String]")); },
 						Err(e) => { println!("Failed to write chunk: {}", e); }
