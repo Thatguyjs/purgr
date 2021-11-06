@@ -1,16 +1,20 @@
 use clap::clap_app;
 use png_rs::{decoder::*, encoder::*};
 
+use std::convert::TryInto;
+
+
 fn main() -> Result<(), DecoderError> {
 	let matches = clap_app!(purgr =>
-		(version: "0.2.0")
+		(version: "0.3.0")
 		(author: "Thatguyjs")
 		(about: "Purge unnecessary tags from PNG images")
 		(@arg INPUT_PATH: * -i --input +takes_value "Specifies the input PNG file")
 		(@arg OUTPUT_PATH: * -o --output +takes_value "Specifies the output PNG file")
+		(@arg ALLOWED_TAGS: -a --allow ... +takes_value "Allows specific tags to be copied to the output file")
 	).get_matches();
 
-	let save_types = vec![
+	let mut save_types = vec![
 		b"IHDR", b"IEND",
 		b"PLTE", b"IDAT",
 		b"cHRM",
@@ -23,6 +27,23 @@ fn main() -> Result<(), DecoderError> {
 		b"tRNS",
 		b"pHYs", // Make this optional
 	];
+
+	match matches.values_of("ALLOWED_TAGS") {
+		Some(vals) => {
+			for v in vals {
+				if v.len() != 4 {
+					println!("Invalid allowed tag: {}", v);
+					continue;
+				}
+
+				let tag_bytes = v.as_bytes().try_into().unwrap();
+				if save_types.contains(&tag_bytes) { continue; }
+
+				save_types.push(tag_bytes);
+			}
+		},
+		None => {}
+	}
 
 	let input_path = matches.value_of("INPUT_PATH").unwrap();
 	let output_path = matches.value_of("OUTPUT_PATH").unwrap();
